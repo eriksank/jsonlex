@@ -1,0 +1,39 @@
+#-----------------------------
+# keywords
+#-----------------------------
+
+IF:if
+ELSE:else
+
+#-----------------------------
+# punctuation:
+#-----------------------------
+
+LEFT_BRACKET:\(
+RIGHT_BRACKET:\)
+LEFT_CURLY_BRACKET:\{
+RIGHT_CURLY_BRACKET:\}
+SEMICOLON:;
+
+#-----------------------------
+# operators
+#-----------------------------
+
+EQUALS:==
+ASSIGN:=
+
+#-----------------------------
+# these are greedy/ungreedy unbounded strings
+# better to put them at the end
+#-----------------------------
+
+NUMBER_INTEGER:[0-9]+
+IDENTIFIER:[a-zA-Z_][a-zA-Z0-9_]*
+
+#-----------------------------
+# whitespace
+#-----------------------------
+
+
+WHITESPACE:\s+ 
+

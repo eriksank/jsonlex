@@ -1,0 +1,14 @@
+if (this) then {do_something} else {dont}
+if(not this) then { do_something_else } // just a comment here
+/* another comment,
+over two lines */
+&*@&*++ //these are illegal chars
+//"these are" an 'embedded' string within a comment
+/* these are keywords: if,then,else in a comment */
+// this is punctuation: "()}{}{}"' in a comment
+variable1="first string variable"
+variable2='second string variable'
+variable3=324342 //an integer
+variable4=343.34 //a float
+/* illegal chars */ :: @#@$ &&&
+

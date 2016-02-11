@@ -1,0 +1,155 @@
+#!/usr/bin/env php
+<?php
+/*
+	Written by Erik Poupaert
+	February 2016
+	Phnom Penh, Cambodia
+	Licensed under the General Public License (GPL)
+*/
+
+//-----------------------------------------------------------
+// error handling
+//-----------------------------------------------------------
+
+function usage() {
+	echo "usage: lex-extract start=string end=string [replacement=string]\n";
+}
+
+function terminateWithUsage($message) {
+	echo "$message\n";
+	usage();
+	exit(1);
+}
+
+function terminate($message) {
+	echo "$message\n";
+	exit(1);
+}
+
+//-----------------------------------------------------------
+// process commandline args
+//-----------------------------------------------------------
+
+$start=null;
+$end=null;
+$replacement=' ';
+
+$args=array_slice($argv,1);
+foreach($args as $arg) {
+	$parts=explode('=',$arg,2);
+	if(count($parts)!=2) {
+		terminateWithUsage("invalid argument '$arg'; expected: field=value");
+	}
+	$field=$parts[0];
+	$value=$parts[1];
+	switch($field) {
+		case 'start': $start=$value; break;
+		case 'end' : $end=$value; break;
+		case 'replacement': $replacement=$value; break;
+		default: terminateWithUsage("invalid argument '$arg'; unknown field '$field'");
+	}
+}
+
+//-----------------------------------------------------------
+//'start' and 'end' are mandatory
+//-----------------------------------------------------------
+
+if($start==null) {
+	terminateWithUsage("'start' argument is mandatory");
+}
+
+if($end==null) {
+	terminateWithUsage("'end' argument is mandatory");
+}
+
+//-----------------------------------------------------------
+//read from stdin
+//-----------------------------------------------------------
+
+$input=file_get_contents("php://stdin");
+
+$startEsc=preg_quote($start,'/');
+$endEsc=preg_quote($end,'/');
+
+$regex="/(?P<NEWLINE>\\n)|(?P<START>$startEsc)|(?P<END>$endEsc)|(?P<OTHER>((?!$startEsc|$endEsc)[^\\n])+)/s";
+
+$result=preg_match_all($regex,$input,$matches,PREG_SET_ORDER|PREG_OFFSET_CAPTURE);
+
+if($result===FALSE) {
+        terminate("Failure to match input");
+}
+
+function getMatchSymbol($match) {
+		foreach($match as $key=>$value) {
+		        if(is_string($key) && $value[0]!='') return $key;
+		}
+}
+
+//-----------------------------------------------------------
+//turn matches into tokens
+//-----------------------------------------------------------
+
+$tokens=[];
+foreach($matches as $match)
+{
+        $type=getMatchSymbol($match);
+        $value=$match[0][0];
+        $tokens[]=['type'=>$type,'value'=>$value];
+}
+
+//-----------------------------------------------------------
+// process tokens
+//-----------------------------------------------------------
+
+$mode='ignore';
+foreach($tokens as $token) {
+	global $mode;
+	$type=$token['type'];
+	$value=$token['value'];
+	$func="handle_{$type}_{$mode}";
+	$func($value);
+}
+
+//-----------------------------------------------------------
+// input/state handlers
+//-----------------------------------------------------------
+
+function handle_start_ignore($value) {
+	global $mode;
+	$mode='relevant';
+}
+
+function handle_start_relevant($value) {
+	//output verbatim
+	echo $start;
+}
+
+function handle_end_ignore($value) {
+	//output verbatim;
+	echo $end;
+}
+
+function handle_end_relevant($value) {
+	global $mode;
+	$mode='ignore';
+}
+
+function handle_other_ignore($value) {
+	global $replacement;
+	//output replacements
+	echo str_repeat($replacement,strlen($value));
+}
+
+function handle_other_relevant($value) {
+	//normal output
+	echo $value;
+}
+
+function handle_newline_ignore($value) {
+	echo "\n";
+}
+
+function handle_newline_relevant($value) {
+	echo "\n";
+}
+

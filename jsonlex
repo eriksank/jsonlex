@@ -1,0 +1,306 @@
+#!/usr/bin/env php
+<?php
+/*
+	Written by Erik Poupaert
+	February 2016
+	Phnom Penh, Cambodia
+	Licensed under the General Public License (GPL)
+*/
+//-----------------------------------------------------------
+//error handling functions
+//-----------------------------------------------------------
+
+function usage() {
+	echo "usage: jsonlex def=definition-file [format=json|text]\n";
+}
+
+function terminateWithUsage($message) {
+	echo "$message\n";
+	usage();
+	exit(1);
+}
+
+function terminate($message) {
+	echo "$message\n";
+	exit(1);
+}
+
+//-----------------------------------------------------------
+// process commandline args
+//-----------------------------------------------------------
+
+function processCommandLineArgs($args) {
+	$def=null;
+	$format='text';
+	$args=array_slice($args,1);
+	foreach($args as $arg) {
+		$parts=explode('=',$arg,2);
+		if(count($parts)!=2) {
+			terminateWithUsage("invalid argument '$arg'; expected: field=value");
+		}
+		$field=$parts[0];
+		$value=$parts[1];
+		switch($field) {
+			case 'def': $def=$value; break;
+			case 'format': $format=$value; break;
+			default: terminateWithUsage("invalid argument '$arg'; unknown field '$field'");
+		}
+	}
+	return [$def,$format];
+}
+
+//-----------------------------------------------------------
+// validate arguments
+//-----------------------------------------------------------
+
+function validateArgs($def,$format) {
+
+	if($def==null) {
+		terminateWithUsage("'def' argument is mandatory");
+	}
+
+	if(!is_file($def)) {
+		terminate("'$def' is not a file");
+	}
+
+	switch($format) {
+		case 'json': break;
+		case 'text': break;
+		default: terminate("'$format' is not a valid format");
+	}
+
+	return true;
+}
+
+//-----------------------------------------------------------
+//compose pattern from definition file
+//-----------------------------------------------------------
+
+function composePatternFromDefinitionFile($def) {
+	$regexes=file_get_contents($def);
+	$regexLines=explode("\n",$regexes);
+
+	//produce rules
+	$rules=[];
+	foreach($regexLines as $index=>$regexLine) {
+		$lineno=$index+1;
+		#remove any embedded comments
+		$parts=preg_split('/#/',$regexLine,2);	
+		if(count($parts)==2) {
+			$regexLine=$parts[0];
+		}
+		//ignore leading/trailing whitespace
+		$regexLine=ltrim($regexLine);
+		//ignore empty lines
+		if(strlen($regexLine)==0) continue;
+		#split on ':' character
+		$parts=preg_split('/:/',$regexLine,2);
+		if(count($parts)!=2) {
+			terminate("invalid line $lineno, character ':' expected");
+		}
+		$name=trim($parts[0]);
+		$regex= trim($parts[1]);
+		if(trim($name)=='') {
+			terminate("invalid line $lineno, blank name not allowed");		
+		}
+		$rule=['name'=>$name,'regex'=>$regex];
+		$rules[]=$rule;
+	}
+
+	//produce lexer pattern
+	$subpatterns='';
+	foreach($rules as $rule) {
+		$name=$rule['name'];
+		$regex=$rule['regex'];
+		$subpatterns[]="(?P<$name>$regex)";
+	}
+	$pattern='/'.join('|',$subpatterns).'/s';
+
+	return $pattern;
+}
+
+//-----------------------------------------------------------
+//compute newline positions
+//-----------------------------------------------------------
+
+function computeLinePositions($input) {
+	$result=preg_match_all('/\n/',$input,$matches,PREG_SET_ORDER|PREG_OFFSET_CAPTURE);
+	if($result===false) terminate('cannot parse text into lines');
+	$linePositions=[];
+	$lineno=1;
+	$start=0;
+	$position=0;
+	foreach($matches as $match)
+	{
+		    $value=$match[0][0];
+		    $position=$match[0][1];
+		    $end=$position-1;
+		    $linepositions[]=['lineno'=>$lineno,'start'=>$start,'end'=>$end];
+		    $start=$position+1;
+		    $lineno++;
+	}
+
+	//handle last line
+	$end=strlen($input)-1;
+	if($position<=$end)
+	{
+		    $linepositions[]=['lineno'=>$lineno,'start'=>$position,'end'=>$end];                
+	}
+	return $linepositions;
+}
+
+//-----------------------------------------------------------
+//find tokens
+//-----------------------------------------------------------
+function getMatchSymbol($match) {
+		foreach($match as $key=>$value) {
+		        if(is_string($key) && $value[0]!='') return $key;
+		}
+}
+
+function linenoForAbsolutePosition($position,$linePositions)
+{
+	$count=count($linePositions);
+    for($i=0; $i<$count-1; $i++)
+    {
+            $linePosition=$linePositions[$i];
+            $nextLinePosition=$linePositions[$i+1];
+            if($position>=$linePosition['start'] && $position<$nextLinePosition['start']) 
+				return [$linePosition['lineno'],$linePosition['start']];
+    }
+    //last line
+    //any position beyond the last line's starting point, is on the last line
+    $linePosition=$linePositions[$count-1];
+    if($position>=$linePosition['start']) 
+		return [$linePosition['lineno'],$linePosition['start']];
+}
+
+function findTokens($pattern,$input,$linepositions) {
+	$tokens=[];
+	$result=preg_match_all($pattern,$input,$matches,PREG_SET_ORDER|PREG_OFFSET_CAPTURE);
+	if($result===FALSE) {
+	 	terminate("Error compiling lexer pattern: $pattern");
+	}
+	foreach($matches as $match)
+	{
+		$name=getMatchSymbol($match);
+		$value=$match[0][0];
+		$position=$match[0][1];
+		list($lineno,$start)=linenoForAbsolutePosition($position,$linepositions);
+		$column=$position-$start+1;
+		$tokens[]=['name'=>$name,'value'=>$value,'position'=>$position,'lineno'=>$lineno,'column'=>$column];
+	}
+	return $tokens;
+}
+
+//-----------------------------------------------------------
+// find gaps
+//-----------------------------------------------------------
+
+function findGaps($input,$tokens,$linepositions) {
+	$gaps=[];
+	$countTokens=count($tokens);
+
+	//first token
+	if($countTokens>0)
+	{
+		    $token=$tokens[0];
+		    $gapLength=$token['position'];
+		    if($gapLength>0)
+		    {
+		            $value=substr($input,0,$gapLength);
+		            $gaps[]=['name'=>'_GAP_','value'=>$value,'position'=>0,'lineno'=>1,'column'=>1];
+		    }
+	}
+
+
+	//second till last but one token
+	for($i=0; $i<$countTokens-1; $i++)
+	{
+		    $token=$tokens[$i];
+		    $nextToken=$tokens[$i+1];
+		    $tokenLength=strlen($token['value']);
+		    $tokenEnd=$token['position']+$tokenLength;
+		    $gapLength=$nextToken['position']-$tokenEnd;
+
+		    if($gapLength>0)
+		    {
+		            $position=$tokenEnd;
+		            $value=substr($input,$position,$gapLength);
+					list($lineno,$start)=linenoForAbsolutePosition($position,$linepositions);
+					$gaps[]=['name'=>'_GAP_','value'=>$value,'position'=>$position,'lineno'=>$lineno,'column'=>$position-$start+1];
+		    }
+	}
+
+	//last token
+	if($countTokens>0)
+	{
+		    $token=$tokens[$countTokens-1];
+		    $tokenLength=strlen($token['value']);
+		    $tokenEnd=$token['position']+$tokenLength;
+		    $position=strlen($input)-1;
+		    $gapLength=$position-$tokenEnd+1;
+		    if($gapLength>0)
+		    {
+		            $position=$tokenEnd;
+		            $gap=substr($input,$position,$gapLength);
+					list($lineno,$start)=linenoForAbsolutePosition($position,$linepositions);
+					$gaps[]=['name'=>'_GAP_','value'=>$value,'position'=>$position,'lineno'=>$lineno,'column'=>$position-$start+1];
+		    }
+	}
+	return $gaps;
+}
+
+//-----------------------------------------------------------
+//output
+//-----------------------------------------------------------
+
+function escapeNewlines($string)
+{
+        $string=str_replace("\\",'\\s',$string);
+        $string=str_replace("\n",'\n',$string);
+        return $string;
+}
+
+function output($tokens,$gaps,$format) {
+	if($format=='json') {
+		echo json_encode(['tokens'=>$tokens,'gaps'=>$gaps],JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES)."\n";
+	} else {
+		if(count($gaps)>0) {
+			echo "==GAPS==\n";
+			foreach($gaps as $gap) {
+				$name=$gap['name'];
+				$position=$gap['position'];
+				$lineno=$gap['lineno'];
+				$column=$gap['column'];
+				$value=escapeNewLines($gap['value']);
+				echo "$position $lineno $column $name $value\n";
+			}
+		}
+		if(count($tokens)>0) {
+			echo "==TOKENS==\n";
+			foreach($tokens as $token) {
+				$name=$token['name'];
+				$position=$token['position'];
+				$lineno=$token['lineno'];
+				$column=$token['column'];
+				$value=escapeNewLines($token['value']);
+				echo "$position $lineno $column $name $value\n";
+			}
+		}
+	}
+}
+
+//-----------------------------------------------------------
+//MAIN PROGRAM
+//-----------------------------------------------------------
+
+list($def,$format)=processCommandLineArgs($argv);
+validateArgs($def,$format);
+$pattern=composePatternFromDefinitionFile($def);
+$input=file_get_contents("php://stdin");
+$linepositions=computeLinePositions($input);
+$tokens=findTokens($pattern,$input,$linepositions);
+$gaps=findGaps($input,$tokens,$linepositions);
+output($tokens,$gaps,$format);
+

@@ -1,0 +1,32 @@
+#-----------------------------
+# EXAMPLE REGULAR DEFINITIONS
+#-----------------------------
+
+# these are example keywords:
+
+IF:if
+THEN:then
+ELSE:else
+
+# this is example punctuation:
+
+RBRACK_LEFT:\(
+RBRACK_RIGHT:\)
+CBRACK_LEFT:\{
+CBRACK_RIGHT:\}
+EQUALS:=
+
+
+# these are greedy/ungreedy unbounded strings
+# better to put them at the end
+
+NUMBER_FLOAT:[0-9]+(\.[0-9]+)?
+NUMBER_INTEGER:[0-9]+
+IDENTIFIER:[a-zA-Z_][a-zA-Z0-9_]*
+STRING1:".*?"
+STRING2:'.*?'
+COMMENT1:\/\/[^\n]*?(?=\n)
+COMMENT2:\/\*.*?\*\/
+
+WHITESPACE:\s+ #whitespace symbol "\s" is defined by pcre
+
