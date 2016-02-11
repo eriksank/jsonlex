@@ -250,5 +250,5 @@ Written by Erik Poupaert
 
 February 2015
 
-Licensed under the General Public License (GPL).
+Licensed under the General Public License (GPL)
 
