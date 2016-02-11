@@ -240,7 +240,7 @@ Flex generates a function in C that you are supposed to use out of C program. Th
 
 PCRE regular expressions are also much more powerful than the ones you can use in flex. You can correctly parse comments, strings, heredocs and other multiline syntax with PCRE regular expressions. You cannot do that with flex. You would need to painstakingly write additional functions to tackle the problem manually. By the way, in example 2, you can find PCRE regular expressions for parsing comments and strings.
 
-A C program is supposed to be faster, but because the bulk of the work is done by PCRE, which is also a C library, even that may not necessarily be true. If PCRE systematically generates better internal (DFA) tables than flex, you could actually be better off with PCRE in terms of speed. Flex will precompile the tables to improve performance, but PCRE will cache them too. Therefore, that particular performance gain may not be spectacular either.
+A flex C program is supposedly faster, but because the bulk of the work is done by PCRE, which is also a C library, even that may not necessarily be true. If PCRE systematically generates better internal (DFA) tables than flex, you could actually be better off with PCRE in terms of speed. Flex will precompile the tables to improve performance, but PCRE will cache them too. Therefore, that particular performance gain may not be spectacular either.
 
 Jsonlex is a rapid prototyping lexing tool that allows you to do what would otherwise take quite a bit of effort with flex. 
 
