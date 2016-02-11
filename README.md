@@ -235,11 +235,11 @@ All html will have replaced by been spaces.
 
 ## Why jsonlex?
 
-Flex generates a function in C that you are supposed to use out of C program. Therefore, flex is tightly married to C. It would take you additional effort to create bindings to another language. Of all languages, C is obviously not the worst one to be married to, but still. With jsonlex, there is need to write a C program. If all you want is to prototype things and you just need the the output based on input and rules without being dictating to what language you should be using, jsonlex is more suitable.
+Flex generates a function in C that you are supposed to use out of C program. Therefore, flex is tightly married to C. It would take you additional effort to create bindings to another language. Of all languages, C is obviously not the worst one to be married to, but still. With jsonlex, there is no need to write a C program. If all you want to do, is to prototype things, and you just need the the output based on input and rules without being dictating to what language you should be using, jsonlex is more suitable.
 
 PCRE regular expressions are also much more powerful than the ones you can use in flex. You can correctly parse comments, strings, heredocs and other multiline syntax with PCRE regular expressions. You cannot do that with flex. You would need to painstakingly write additional functions to tackle the problem manually. By the way, in example 2, you can find PCRE regular expressions for parsing comments and strings.
 
-A C program is supposed to be faster, but because the bulk of the work is done by PCRE, which is also a C library, even that may not necessarily be true. If PCRE systematically generates better internal (DFA) tables than flex, you could be better off with PCRE in terms of speed. Flex will precompile the tables to improve performance, but PCRE will cache them too. Therefore, that particular performance gain may not be that spectacular either.
+A C program is supposed to be faster, but because the bulk of the work is done by PCRE, which is also a C library, even that may not necessarily be true. If PCRE systematically generates better internal (DFA) tables than flex, you could actually be better off with PCRE in terms of speed. Flex will precompile the tables to improve performance, but PCRE will cache them too. Therefore, that particular performance gain may not be spectacular either.
 
 Jsonlex is a rapid prototyping lexing tool that allows you to do what would otherwise take quite a bit of effort with flex. 
 
