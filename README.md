@@ -192,8 +192,8 @@ The advantage of using the json format is that you can feed the output of jsonle
 Imagine that you add the following line at the bottom of the input:
 
 ```
-	x=5;
 if(a==b) {
+	x=5;
 } else {
 	x=25;
 }
