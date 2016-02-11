@@ -6,10 +6,13 @@ Jsonlex is a text scanner (also called "lexer" or "tokenizer"). It does pretty m
 
 In the process of parsing (structured) text, a text scanner will group letters into qualified words. Quite often, the purpose for doing this, is to supply a stream of qualified words to a parser, which will group words into sentences and subsentences. Example, the text:
 
+```
 if(a>0) then z=x+y
+```
 
 becomes after lexing:
 
+|type|value
 |---|---
 | IF | if
 | LEFT_BRACKET | (
