@@ -232,7 +232,7 @@ This is a small program that removes the non-programming code from program typic
 $ cat input.php | lex-extract start=<?php end=?>
 ```
 
-All html will have replaced by been spaces.
+All html will have been replaced by spaces.
 
 ## Why jsonlex?
 
