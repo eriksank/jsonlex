@@ -99,7 +99,7 @@ IDENTIFIER:[a-zA-Z_][a-zA-Z0-9_]*
 
 WHITESPACE:\s+ 
 ```
-A rule must be on one line, consist of a rulename, followed by a semicolon, followed by a regular expression. For the regular expressions, you can use all the constructs available in pcre. Note that you need to escape PCRE regular expression syntax control characters as appropriate.
+A rule must be on one line, consist of a rulename, followed by a semicolon, followed by a regular expression. For the regular expressions, you can use all the constructs available in PCRE. Note that you need to escape PCRE regular expression syntax control characters as appropriate.
 
 ### output
 
