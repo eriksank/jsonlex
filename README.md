@@ -145,7 +145,7 @@ By default jsonlex outputs the text analysis in textual format:
 Note that:
 
 * newlines are represented by: `\n`
-* backslashes (\) are represented by: `\s`
+* backslashes (\\) are represented by: `\s`
 
 In order to unescape the embedded control characters, you will have to translate again:
 
