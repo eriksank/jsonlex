@@ -226,7 +226,7 @@ Of course, it is up to you to decide if the presence of gaps means that there is
 
 ## lex-extract
 
-This is a small program that removes the non-programming code from program typically embedded in html or a similar format. For example to remove the html out of a PHP program:
+This is a small program that removes the non-programming code from program code typically embedded in html or a similar format. For example to remove the html out of a PHP program:
 
 ```
 $ cat input.php | lex-extract start=<?php end=?>
