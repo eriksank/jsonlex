@@ -2,7 +2,7 @@
 
 ## What is jsonlex?
 
-Jsonlex is a text scanner (also called "lexer" or "tokenizer"). It does pretty much does what [flex](http://flex.sourceforge.net) does. Under the hood it uses the [pcre](http://www.pcre.org) library.
+Jsonlex is a text scanner (also called "lexer" or "tokenizer"). It does pretty much does what [flex](http://flex.sourceforge.net) does. Under the hood it uses the [PCRE](http://www.pcre.org) library.
 
 In the process of parsing (structured) text, a text scanner will group letters into qualified words. Quite often, the purpose for doing this, is to supply a stream of qualified words to a parser, which will group words into sentences and subsentences. Example, the text:
 
@@ -26,6 +26,7 @@ becomes after lexing:
 | IDENTIFIER | x
 | SUM | +
 | IDENTIFIER | y
+
 
 ## Installation
 
@@ -142,7 +143,7 @@ By default jsonlex outputs the text analysis in textual format:
 
 Note that:
 
-* newlines are represented by: `\n`.
+* newlines are represented by: `\n`
 * backslashes (\) are represented by: `\s`
 
 In order to unescape the embedded control characters, you will have to translate again:
@@ -150,7 +151,7 @@ In order to unescape the embedded control characters, you will have to translate
 * `"\n"` -> `\n`
 * `\s` -> `\`
 
-This simple text format has a common line discipline and absolutely suitable for use with shell scripts.
+This simple text format has a common line discipline and is absolutely suitable for use with shell scripts.
 
 
 ### Output in json
@@ -183,15 +184,15 @@ This simple text format has a common line discipline and absolutely suitable for
         }, ...
 ```
 
-The advantage of using the json format is that you can feed the output of jsonlex to another script that supports json and which should be able to automatically parse this output.
+The advantage of using the json format is that you can feed the output of jsonlex to another script of which the scripting engine supports json. It should be able to parse this output automatically.
  
 ## Gaps
 
 Imagine that you add the following line at the bottom of the input:
 
 ```
-if(a==b) {
 	x=5;
+if(a==b) {
 } else {
 	x=25;
 }
@@ -230,7 +231,7 @@ This is a small program that removes the non-programming code from program typic
 $ cat input.php | lex-extract start=<?php end=?>
 ```
 
-All html will have replaced by spaces.
+All html will have replaced by been spaces.
 
 ## Why jsonlex?
 
