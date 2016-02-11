@@ -246,5 +246,8 @@ Jsonlex is a rapid prototyping lexing tool that allows you to do what would othe
 ## Copyright
 
 Written by Erik Poupaert
+
 February 2015
+
 Licensed under the General Public License (GPL).
+
