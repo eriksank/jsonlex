@@ -45,6 +45,7 @@ You can uninstall jsonlex with the script `uninstall.sh`:
 ## Example
 
 	$ cd examples/example-jsonlex-1
+
 	$ cat input.txt | jsonlex def=def.txt
 
 ### input.txt
